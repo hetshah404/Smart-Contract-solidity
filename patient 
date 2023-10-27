@@ -1,0 +1,31 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract PatientRecord {
+    struct HealthRecord {
+        uint256 patientId;
+        string patientName;
+        uint256 age;
+        string diagnosis;
+        uint256 timestamp;
+    }
+
+    mapping(uint256 => HealthRecord[]) public patientRecords;
+    mapping(uint256 => address) public patientRecordOwners;
+
+    event RecordAdded(uint256 indexed patientId, string patientName, uint256 age, string diagnosis, uint256 timestamp);
+
+    function addRecord(uint256 _patientId, string memory _patientName, uint256 _age, string memory _diagnosis) public {
+        require(patientRecordOwners[_patientId] == address(0) || patientRecordOwners[_patientId] == msg.sender, "Unauthorized access");
+        
+        HealthRecord memory newRecord = HealthRecord(_patientId, _patientName, _age, _diagnosis, block.timestamp);
+        patientRecords[_patientId].push(newRecord);
+        patientRecordOwners[_patientId] = msg.sender;
+
+        emit RecordAdded(_patientId, _patientName, _age, _diagnosis, block.timestamp);
+    }
+
+    function getRecords(uint256 _patientId) public view returns (HealthRecord[] memory) {
+        return patientRecords[_patientId];
+    }
+}
