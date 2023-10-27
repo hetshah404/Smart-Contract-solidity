@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract ExamCertificate {
+    struct Certificate {
+        address issuer;
+        address recipient;
+        string examName;
+        uint256 issueDate;
+        bool isValid;
+    }
+
+    mapping(uint256 => Certificate) public certificates;
+    uint256 public certificateCount;
+
+    event CertificateIssued(uint256 indexed certificateId, address indexed issuer, address indexed recipient, string examName, uint256 issueDate);
+
+    function issueCertificate(address _recipient, string memory _examName) public {
+        require(_recipient != address(0), "Invalid recipient address");
+        require(bytes(_examName).length > 0, "Invalid exam name");
+
+        certificateCount++;
+        certificates[certificateCount] = Certificate(msg.sender, _recipient, _examName, block.timestamp, true);
+
+        emit CertificateIssued(certificateCount, msg.sender, _recipient, _examName, block.timestamp);
+    }
+
+    function getCertificate(uint256 _certificateId) public view returns (address, address, string memory, uint256, bool) {
+        Certificate memory certificate = certificates[_certificateId];
+        return (certificate.issuer, certificate.recipient, certificate.examName, certificate.issueDate, certificate.isValid);
+    }
+}
